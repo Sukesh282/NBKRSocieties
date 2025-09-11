@@ -18,8 +18,8 @@ This project aims to provide students and faculty with a central platform to vie
 ## 🛠 Tech Stack
 
 - **Frontend:** React.js, Tailwind CSS, TypeScript
-- **Backend:** Node.js / Express (or specify if PHP/Python/Django was used)
-- **Database:** MongoDB (depending on your implementation)
+- **Backend:** Node.js / Express
+- **Database:** MongoDB
 - **Other Tools:** Git, VS Code, etc.
 
 ---
