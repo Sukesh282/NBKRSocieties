@@ -44,12 +44,16 @@ This guide helps AI coding agents work productively in the NBKRSocieties codebas
 - **Error Handling:** Global error handler using `http-errors` package, imported as middleware in `app.ts`
 - **Middleware:** Express middleware applied in `app.ts`, global error handler should be last middleware
 - **TypeScript:** Strict type safety with comprehensive rules (`noImplicitAny`, `noUnusedLocals`, etc.)
+- **User Roles:** Enum-based role system with 5 levels: student, coremember, director, hod, admin
+- **Password Security:** bcrypt hashing with salt rounds of 10
+- **API Structure:** Feature-based routing with separate controller/model/router files per domain
 
 ## Integration Points
 
 - **Database Connection:** Established in `server.ts` before starting the server
 - **Environment Config:** All config loaded from `.env` file in `config.ts`
 - **Error Handling:** Centralized in `globalErrorHandler.ts` middleware
+- **API Routes:** Modular router system with `/api/users` prefix pattern
 
 ## Examples
 
@@ -57,6 +61,7 @@ This guide helps AI coding agents work productively in the NBKRSocieties codebas
 - **Database model:** Create in `backend/src/models/` directory, import Mongoose
 - **Middleware:** Add to `backend/src/middlewares/` and import in `app.ts`
 - **Environment variable:** Add to `.env`, then to `config.ts` and export
+- **New feature module:** Follow user module pattern: `featureController.ts`, `featureModel.ts`, `featureRouter.ts`, `featureTypes.ts`
 
 ## Recommendations for AI Agents
 
@@ -65,6 +70,8 @@ This guide helps AI coding agents work productively in the NBKRSocieties codebas
 - Use `http-errors` for error handling consistency
 - Test database connections and server startup after changes
 - Update `.env` for new environment variables and reflect in `config.ts`
+- Use bcrypt for password hashing with 10 salt rounds
+- Follow enum-based role pattern for user permissions
 
 ---
 
