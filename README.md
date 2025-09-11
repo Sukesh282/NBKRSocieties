@@ -1,4 +1,4 @@
-"# NBKRSocieties - College Society Event Website
+# NBKRSocieties - College Society Event Website
 
 A web application designed to manage and showcase events organized by various **societies and clubs** at N.B.K.R. Institute of Science & Technology.  
 This project aims to provide students and faculty with a central platform to view, register, and stay updated on upcoming events.
