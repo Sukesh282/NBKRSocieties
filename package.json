@@ -1,7 +1,7 @@
 {
   "name": "nbkrsocieties",
   "version": "1.0.0",
-  "description": "",
+  "description": "A web application designed to manage and showcase events organized by various societies and clubs at N.B.K.R. Institute of Science & Technology.",
   "type": "module",
   "main": "server.js",
   "scripts": {
