@@ -79,7 +79,7 @@ export const loginUser = async (
 
     const refreshToken = jwt.sign(
       { userId: user._id, role: user.role },
-      process.env.JWT_SECRET as string,
+      config.jwtSecret as string,
       { expiresIn: "30d" },
     );
 
@@ -113,14 +113,14 @@ export const refreshAccessToken = async (
   }
 
   try {
-    const payload = jwt.verify(
-      refreshToken,
-      process.env.JWT_SECRET as string,
-    ) as { userId: string; role: string };
+    const payload = jwt.verify(refreshToken, config.jwtSecret as string) as {
+      userId: string;
+      role: string;
+    };
 
     const accessToken = jwt.sign(
       { userId: payload.userId, role: payload.role },
-      process.env.JWT_SECRET as string,
+      config.jwtSecret as string,
       { expiresIn: "15m" },
     );
 
