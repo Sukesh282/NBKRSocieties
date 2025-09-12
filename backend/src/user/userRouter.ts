@@ -6,7 +6,7 @@ import {
   sendOTPMail,
   verifyEmail,
 } from "./userController.js";
-import { protectedRout } from "../middlewares/protected.js";
+import { protectedRoute } from "../middlewares/protected.js";
 
 const userRouter = Router();
 
@@ -15,7 +15,7 @@ userRouter.post("/login", loginUser);
 userRouter.get("/refresh", refreshAccessToken);
 
 //protected routes
-userRouter.post("/sendmail", protectedRout, sendOTPMail);
-userRouter.post("/verifyotp", protectedRout, verifyEmail);
+userRouter.post("/sendmail", protectedRoute, sendOTPMail);
+userRouter.post("/verifyotp", protectedRoute, verifyEmail);
 
 export default userRouter;
