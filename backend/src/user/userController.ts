@@ -61,13 +61,13 @@ export const loginUser = async (
   try {
     const user = await UserModel.findOne({ username });
     if (!user) {
-      const error = createHttpError(401, "Invalid email or password");
+      const error = createHttpError(401, "Invalid username or password");
       return next(error);
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      const error = createHttpError(401, "Invalid email or password");
+      const error = createHttpError(401, "Invalid username or password");
       return next(error);
     }
 
