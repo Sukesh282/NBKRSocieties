@@ -21,6 +21,8 @@ export const createUser = async (
       return next(error);
     }
 
+    //TODO: Verify email with OTP
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new UserModel({
       name,
@@ -61,13 +63,13 @@ export const loginUser = async (
     const accessToken = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET as string,
-      { expiresIn: "1h" },
+      { expiresIn: "15m" },
     );
 
     const refreshToken = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET as string,
-      { expiresIn: "7d" },
+      { expiresIn: "30d" },
     );
 
     res.cookie("refreshToken", refreshToken, {
@@ -80,5 +82,34 @@ export const loginUser = async (
     res.status(200).json({ accessToken });
   } catch (error) {
     next(error);
+  }
+};
+
+export const refreshAccessToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    const error = createHttpError(401, "Refresh token not found");
+    return next(error);
+  }
+
+  try {
+    const payload = jwt.verify(
+      refreshToken,
+      process.env.JWT_SECRET as string,
+    ) as { userId: string; role: string };
+
+    const accessToken = jwt.sign(
+      { userId: payload.userId, role: payload.role },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "15m" },
+    );
+
+    res.status(200).json({ accessToken });
+  } catch (error) {
+    res.redirect("/login");
   }
 };
