@@ -337,9 +337,9 @@ Feel free to modify and improve it for your own learning and development.
 **NBKRSocieties Development Team**  
 N.B.K.R. Institute of Science & Technology
 
-- **[Sukesh Reddy](https://github.com/Sukesh282)** - Project Lead & Backend Developer
+- **[Sukesh Reddy](https://github.com/Sukesh282)** - Full Stack Developer
 - **[Murali](https://github.com/tobioffice)** - Full Stack Developer
-- **[Mothi](https://github.com/mothi-135)** - Frontend Developer
+- **[Mothi](https://github.com/mothi-135)** - Full Stack Developer
 
 ---
 
