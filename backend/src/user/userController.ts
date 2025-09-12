@@ -125,6 +125,12 @@ export const refreshAccessToken = async (
       { expiresIn: "15m" },
     );
 
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: config.nodeEnv === "production",
+      sameSite: "strict",
+    });
+
     res.status(200).json({ accessToken });
   } catch (error) {
     res.status(401).json({ error: "Invalid or expired refresh token" });
@@ -133,7 +139,7 @@ export const refreshAccessToken = async (
 
 //TODO: use redis to store these details temporarily
 export const usersWaitingVerify: {
-  [key: string]: { email: string; otp: string };
+  [key: string]: { email: string; otp: string; timestamp: number };
 } = {};
 
 export const sendOTPMail = async (
@@ -156,7 +162,9 @@ export const sendOTPMail = async (
 
     const otp = crypto.randomInt(100000, 999999).toString();
 
-    usersWaitingVerify[req.user.username] = { email, otp };
+    const timestamp: number = Date.now();
+    usersWaitingVerify[req.user.username] = { email, otp, timestamp };
+
     sendOTPMailTool(email, otp);
 
     res.status(200).json({ message: "OTP sent to email" });
@@ -193,6 +201,11 @@ export const verifyEmail = async (
       return next(error);
     }
 
+    if (Date.now() - userData.timestamp > 60 * 60 * 15) {
+      const error = createHttpError(400, "Expired OTP");
+      delete usersWaitingVerify[req.user.username];
+      return next(error);
+    }
     await UserModel.findByIdAndUpdate(req.user._id, {
       email: userData.email,
     });
