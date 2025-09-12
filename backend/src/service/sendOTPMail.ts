@@ -14,6 +14,6 @@ export const sendOTPMail = async (to: string, otp: string) => {
     from: `"NBKRIST Societies" <${config.googleAppUsername}>`,
     to: to,
     subject: "OTP for Email Verification",
-    html: `<b>Hello ${to} Your otp is ${otp}</b>`,
+    html: `<b>Hello ${to}, Your otp is ${otp}</b>`,
   });
 };
