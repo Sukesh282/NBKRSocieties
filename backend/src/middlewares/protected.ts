@@ -15,6 +15,9 @@ export const protectedRoute = async (
   next: NextFunction,
 ) => {
   const accessToken = req.cookies?.accessToken;
+  if (!accessToken) {
+    return next(createHttpError(401, 'Access token not found'));
+  }
   try {
     const jwtUser = jwt.verify(accessToken, config.jwtSecret as string);
     const user = await UserModel.findById((jwtUser as JwtPayload).userId);
