@@ -3,6 +3,7 @@ import createHttpError from "http-errors";
 import UserModel from "./userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { config } from "../config/config.js";
 
 export const createUser = async (
   req: Request,
@@ -74,7 +75,7 @@ export const loginUser = async (
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: config.nodeEnv === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
