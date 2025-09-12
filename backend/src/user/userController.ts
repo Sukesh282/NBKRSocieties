@@ -1,20 +1,25 @@
 import { NextFunction, Request, Response } from "express";
+import { CustomRequest } from "../middlewares/protected.js";
 import createHttpError from "http-errors";
 import UserModel from "./userModel.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { config } from "../config/config.js";
+import { sendOTPMail as sendOTPMailTool } from "../service/sendOTPMail.js";
+import crypto from "crypto";
 
 export const createUser = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password) {
+  const { name, username, password } = req.body;
+  if (!name || !username || !password) {
     const error = createHttpError(400, "All fields are required");
     return next(error);
   }
   try {
-    const user = await UserModel.findOne({ email });
+    const user = await UserModel.findOne({ username });
     if (user) {
       const error = createHttpError(409, "User already exists");
       return next(error);
@@ -23,12 +28,190 @@ export const createUser = async (
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new UserModel({
       name,
-      email,
+      username,
       password: hashedPassword,
       role: "student",
     });
     const savedUser = await newUser.save();
-    res.status(201).json(savedUser);
+
+    const safeUser = {
+      _id: savedUser._id,
+      name: savedUser.name,
+      username: savedUser.username,
+      role: savedUser.role,
+      createdAt: savedUser.createdAt,
+      updatedAt: savedUser.updatedAt,
+    };
+
+    res.status(201).json(safeUser);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const loginUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    const error = createHttpError(400, "username and password are required");
+    return next(error);
+  }
+  try {
+    const user = await UserModel.findOne({ username });
+    if (!user) {
+      const error = createHttpError(401, "Invalid username or password");
+      return next(error);
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      const error = createHttpError(401, "Invalid username or password");
+      return next(error);
+    }
+
+    const accessToken = jwt.sign(
+      { userId: user._id, role: user.role },
+      config.jwtSecret as string,
+      { expiresIn: "15m" },
+    );
+
+    const refreshToken = jwt.sign(
+      { userId: user._id, role: user.role },
+      config.jwtSecret as string,
+      { expiresIn: "30d" },
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: config.nodeEnv === "production",
+      sameSite: "strict",
+    });
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: config.nodeEnv === "production",
+      sameSite: "strict",
+    });
+
+    res.status(200).json({ accessToken });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const refreshAccessToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    const error = createHttpError(401, "Refresh token not found");
+    return next(error);
+  }
+
+  try {
+    const payload = jwt.verify(refreshToken, config.jwtSecret as string) as {
+      userId: string;
+      role: string;
+    };
+
+    const accessToken = jwt.sign(
+      { userId: payload.userId, role: payload.role },
+      config.jwtSecret as string,
+      { expiresIn: "15m" },
+    );
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: config.nodeEnv === "production",
+      sameSite: "strict",
+    });
+
+    res.status(200).json({ accessToken });
+  } catch (error) {
+    res.status(401).json({ error: "Invalid or expired refresh token" });
+  }
+};
+
+//TODO: use redis to store these details temporarily
+export const usersWaitingVerify: {
+  [key: string]: { email: string; otp: string; timestamp: number };
+} = {};
+
+export const sendOTPMail = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (!req.user) {
+    const error = createHttpError(401, "Unauthorized");
+    return next(error);
+  }
+
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      const error = createHttpError(400, "Email is required");
+      return next(error);
+    }
+
+    const otp = crypto.randomInt(100000, 999999).toString();
+
+    const timestamp: number = Date.now();
+    usersWaitingVerify[req.user.username] = { email, otp, timestamp };
+
+    sendOTPMailTool(email, otp);
+
+    res.status(200).json({ message: "OTP sent to email" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyEmail = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { otp } = req.body;
+    if (!otp) {
+      const error = createHttpError(400, "OTP is required");
+      return next(error);
+    }
+
+    if (!req.user) {
+      const error = createHttpError(401, "Unauthorized");
+      return next(error);
+    }
+
+    const userData = usersWaitingVerify[req.user.username];
+    if (!userData) {
+      const error = createHttpError(400, "No OTP request found");
+      return next(error);
+    }
+
+    if (userData.otp !== otp) {
+      const error = createHttpError(400, "Invalid OTP");
+      return next(error);
+    }
+
+    if (Date.now() - userData.timestamp > 60 * 60 * 15) {
+      const error = createHttpError(400, "Expired OTP");
+      delete usersWaitingVerify[req.user.username];
+      return next(error);
+    }
+    await UserModel.findByIdAndUpdate(req.user._id, {
+      email: userData.email,
+    });
+
+    delete usersWaitingVerify[req.user.username];
+    res.status(200).json({ message: "Email verified successfully" });
   } catch (error) {
     next(error);
   }

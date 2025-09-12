@@ -4,12 +4,10 @@ import { User } from "./userTypes.js";
 const userSchema = new mongoose.Schema<User>(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    rollnumber: {
-      type: String,
-      unique: true,
-    },
+    username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    email: { type: String, unique: true, required: false },
+    rollnumber: { type: String, unique: true, required: false },
     role: {
       type: String,
       enum: ["student", "coremember", "director", "hod", "admin"],

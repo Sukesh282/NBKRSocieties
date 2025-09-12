@@ -9,9 +9,10 @@ enum Role {
 export interface User {
   _id: string;
   name: string;
-  email: string;
-  rollnumber: string;
+  username: string;
   password: string;
+  email?: string;
+  rollnumber?: string;
   role: Role;
   createdAt: Date;
   updatedAt: Date;
