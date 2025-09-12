@@ -9,7 +9,7 @@ export interface CustomRequest extends Request {
   user?: User;
 }
 
-export const protectedRout = async (
+export const protectedRoute = async (
   req: CustomRequest,
   _res: Response,
   next: NextFunction,

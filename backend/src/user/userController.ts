@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { config } from "../config/config.js";
 import { sendOTPMail as sendOTPMailTool } from "../service/sendOTPMail.js";
+import crypto from "crypto";
 
 export const createUser = async (
   req: Request,
@@ -130,6 +131,7 @@ export const refreshAccessToken = async (
   }
 };
 
+//TODO: use redis to store these details temporarily
 export const usersWaitingVerify: {
   [key: string]: { email: string; otp: string };
 } = {};
@@ -152,7 +154,8 @@ export const sendOTPMail = async (
       return next(error);
     }
 
-    const otp = Math.floor(100000 + Math.random() * 899999).toString();
+    const otp = crypto.randomInt(100000, 999999).toString();
+
     usersWaitingVerify[req.user.username] = { email, otp };
     sendOTPMailTool(email, otp);
 
