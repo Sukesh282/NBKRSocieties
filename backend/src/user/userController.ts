@@ -1,38 +1,48 @@
 import { NextFunction, Request, Response } from "express";
+import { CustomRequest } from "../middlewares/protected.js";
 import createHttpError from "http-errors";
 import UserModel from "./userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { config } from "../config/config.js";
+import { sendOTPMail as sendOTPMailTool } from "../service/sendOTPMail.js";
 
 export const createUser = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password) {
+  const { name, username, password } = req.body;
+  if (!name || !username || !password) {
     const error = createHttpError(400, "All fields are required");
     return next(error);
   }
   try {
-    const user = await UserModel.findOne({ email });
+    const user = await UserModel.findOne({ username });
     if (user) {
       const error = createHttpError(409, "User already exists");
       return next(error);
     }
 
-    //TODO: Verify email with OTP
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new UserModel({
       name,
-      email,
+      username,
       password: hashedPassword,
       role: "student",
     });
     const savedUser = await newUser.save();
-    res.status(201).json(savedUser);
+
+    const safeUser = {
+      _id: savedUser._id,
+      name: savedUser.name,
+      username: savedUser.username,
+      role: savedUser.role,
+      createdAt: savedUser.createdAt,
+      updatedAt: savedUser.updatedAt,
+    };
+
+    res.status(201).json(safeUser);
   } catch (error) {
     next(error);
   }
@@ -43,13 +53,13 @@ export const loginUser = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    const error = createHttpError(400, "Email and password are required");
+  const { username, password } = req.body;
+  if (!username || !password) {
+    const error = createHttpError(400, "username and password are required");
     return next(error);
   }
   try {
-    const user = await UserModel.findOne({ email });
+    const user = await UserModel.findOne({ username });
     if (!user) {
       const error = createHttpError(401, "Invalid email or password");
       return next(error);
@@ -77,7 +87,12 @@ export const loginUser = async (
       httpOnly: true,
       secure: config.nodeEnv === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: config.nodeEnv === "production",
+      sameSite: "strict",
     });
 
     res.status(200).json({ accessToken });
@@ -112,5 +127,76 @@ export const refreshAccessToken = async (
     res.status(200).json({ accessToken });
   } catch (error) {
     res.redirect("/login");
+  }
+};
+
+export const usersWaitingVerify: {
+  [key: string]: { email: string; otp: string };
+} = {};
+
+export const sendOTPMail = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (!req.user) {
+    const error = createHttpError(401, "Unauthorized");
+    return next(error);
+  }
+
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      const error = createHttpError(400, "Email is required");
+      return next(error);
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 899999).toString();
+    usersWaitingVerify[req.user.username] = { email, otp };
+    sendOTPMailTool(email, otp);
+
+    res.status(200).json({ message: "OTP sent to email" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyEmail = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { otp } = req.body;
+    if (!otp) {
+      const error = createHttpError(400, "OTP is required");
+      return next(error);
+    }
+
+    if (!req.user) {
+      const error = createHttpError(401, "Unauthorized");
+      return next(error);
+    }
+
+    const userData = usersWaitingVerify[req.user.username];
+    if (!userData) {
+      const error = createHttpError(400, "No OTP request found");
+      return next(error);
+    }
+
+    if (userData.otp !== otp) {
+      const error = createHttpError(400, "Invalid OTP");
+      return next(error);
+    }
+
+    await UserModel.findByIdAndUpdate(req.user._id, {
+      email: userData.email,
+    });
+
+    delete usersWaitingVerify[req.user.username];
+    res.status(200).json({ message: "Email verified successfully" });
+  } catch (error) {
+    next(error);
   }
 };
