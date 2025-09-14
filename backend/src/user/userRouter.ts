@@ -6,7 +6,7 @@ import {
   sendOTPMail,
   verifyEmail,
 } from "./userController.js";
-import { protectedRoute } from "../middlewares/protected.js";
+import { protectedRoute } from "../middleware/protected.js";
 
 const userRouter = Router();
 

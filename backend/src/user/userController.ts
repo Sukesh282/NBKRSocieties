@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { CustomRequest } from "../middlewares/protected.js";
+import { CustomRequest } from "../middleware/protected.js";
 import createHttpError from "http-errors";
 import UserModel from "./userModel.js";
 import bcrypt from "bcrypt";
@@ -8,6 +8,13 @@ import { config } from "../config/config.js";
 import { sendOTPMail as sendOTPMailTool } from "../service/sendOTPMail.js";
 import crypto from "crypto";
 
+//TODO: use redis to store these details temporarily
+export const usersWaitingVerify: {
+  [key: string]: { email: string; otp: string; timestamp: number };
+} = {};
+
+const getOTP = (): string => crypto.randomInt(100000, 999999).toString();
+
 export const createUser = async (
   req: Request,
   res: Response,
@@ -15,14 +22,12 @@ export const createUser = async (
 ) => {
   const { name, username, password } = req.body;
   if (!name || !username || !password) {
-    const error = createHttpError(400, "All fields are required");
-    return next(error);
+    return next(createHttpError(400, "All fields are required"));
   }
   try {
     const user = await UserModel.findOne({ username });
     if (user) {
-      const error = createHttpError(409, "User already exists");
-      return next(error);
+      return next(createHttpError(409, "User already exists"));
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -56,8 +61,7 @@ export const loginUser = async (
 ) => {
   const { username, password } = req.body;
   if (!username || !password) {
-    const error = createHttpError(400, "username and password are required");
-    return next(error);
+    return next(createHttpError(400, "username and password are required"));
   }
   try {
     const user = await UserModel.findOne({ username });
@@ -109,8 +113,7 @@ export const refreshAccessToken = async (
 ) => {
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) {
-    const error = createHttpError(401, "Refresh token not found");
-    return next(error);
+    return next(createHttpError(401, "Refresh token not found"));
   }
 
   try {
@@ -137,35 +140,28 @@ export const refreshAccessToken = async (
   }
 };
 
-//TODO: use redis to store these details temporarily
-export const usersWaitingVerify: {
-  [key: string]: { email: string; otp: string; timestamp: number };
-} = {};
-
 export const sendOTPMail = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction,
 ) => {
   if (!req.user) {
-    const error = createHttpError(401, "Unauthorized");
-    return next(error);
+    return next(createHttpError(401, "Unauthorized"));
   }
 
   try {
     const { email } = req.body;
 
     if (!email) {
-      const error = createHttpError(400, "Email is required");
-      return next(error);
+      return next(createHttpError(400, "Email is required"));
     }
 
-    const otp = crypto.randomInt(100000, 999999).toString();
+    const otp = getOTP();
 
     const timestamp: number = Date.now();
     usersWaitingVerify[req.user.username] = { email, otp, timestamp };
 
-    sendOTPMailTool(email, otp);
+    sendOTPMailTool(email, otp, req.user.name);
 
     res.status(200).json({ message: "OTP sent to email" });
   } catch (error) {
@@ -181,30 +177,27 @@ export const verifyEmail = async (
   try {
     const { otp } = req.body;
     if (!otp) {
-      const error = createHttpError(400, "OTP is required");
-      return next(error);
+      return next(createHttpError(400, "OTP is required"));
     }
 
     if (!req.user) {
-      const error = createHttpError(401, "Unauthorized");
-      return next(error);
+      return next(createHttpError(401, "Unauthorized"));
     }
 
     const userData = usersWaitingVerify[req.user.username];
     if (!userData) {
-      const error = createHttpError(400, "No OTP request found");
-      return next(error);
+      return next(createHttpError(400, "No OTP request found"));
     }
 
     if (userData.otp !== otp) {
-      const error = createHttpError(400, "Invalid OTP");
-      return next(error);
+      return next(createHttpError(400, "Invalid OTP"));
     }
 
-    if (Date.now() - userData.timestamp > 60 * 60 * 15) {
-      const error = createHttpError(400, "Expired OTP");
+    const otpExpiryMs = config.otpExpiryMs || 15 * 60 * 1000;
+
+    if (Date.now() - userData.timestamp > otpExpiryMs) {
       delete usersWaitingVerify[req.user.username];
-      return next(error);
+      return next(createHttpError(400, "Expired OTP"));
     }
     await UserModel.findByIdAndUpdate(req.user._id, {
       email: userData.email,

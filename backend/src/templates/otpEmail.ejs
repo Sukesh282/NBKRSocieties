@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Verification - NBKRIST Societies</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f8fafc;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+      }
+      .header {
+        background: #1e293b;
+        color: white;
+        padding: 32px 24px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0 0 8px 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .header p {
+        margin: 0;
+        opacity: 0.8;
+        font-size: 14px;
+      }
+      .content {
+        padding: 32px 24px;
+      }
+      .greeting {
+        color: #334155;
+        font-size: 16px;
+        margin-bottom: 24px;
+      }
+      .greeting strong {
+        color: #1e293b;
+      }
+      .otp-section {
+        text-align: center;
+        margin: 32px 0;
+      }
+      .otp-label {
+        color: #64748b;
+        font-size: 14px;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 500;
+      }
+      .otp-box {
+        background: #f1f5f9;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 16px auto;
+        max-width: 200px;
+      }
+      .otp-code {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1e293b;
+        letter-spacing: 6px;
+        margin: 0;
+        font-family: "Courier New", monospace;
+      }
+      .instructions {
+        color: #475569;
+        font-size: 14px;
+        text-align: center;
+        margin-top: 16px;
+      }
+      .notice {
+        background: #fef3c7;
+        border: 1px solid #fcd34d;
+        border-radius: 6px;
+        padding: 16px;
+        margin: 24px 0;
+      }
+      .notice p {
+        margin: 0;
+        color: #92400e;
+        font-size: 14px;
+      }
+      .footer {
+        background: #f8fafc;
+        padding: 24px;
+        text-align: center;
+        border-top: 1px solid #e2e8f0;
+      }
+      .footer p {
+        margin: 0 0 8px 0;
+        color: #64748b;
+        font-size: 12px;
+      }
+      .footer .company {
+        font-weight: 500;
+        color: #334155;
+        margin-bottom: 4px;
+      }
+      @media (max-width: 640px) {
+        body {
+          padding: 10px;
+        }
+        .container {
+          border-radius: 6px;
+        }
+        .header {
+          padding: 24px 16px;
+        }
+        .content {
+          padding: 24px 16px;
+        }
+        .footer {
+          padding: 20px 16px;
+        }
+        .otp-code {
+          font-size: 28px;
+          letter-spacing: 4px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>NBKRIST Societies</h1>
+        <p>N.B.K.R. Institute of Science & Technology</p>
+      </div>
+
+      <div class="content">
+        <div class="greeting">Dear <strong><%= name %></strong>,</div>
+
+        <p style="color: #334155; margin-bottom: 24px">
+          Thank you for registering with NBKRIST Societies. To complete your
+          email verification and secure your account, please use the
+          verification code below:
+        </p>
+
+        <div class="otp-section">
+          <div class="otp-label">Verification Code</div>
+          <div class="otp-box">
+            <div class="otp-code"><%= otp %></div>
+          </div>
+          <div class="instructions">
+            This code will expire in <strong>10 minutes</strong>
+          </div>
+        </div>
+
+        <div class="notice">
+          <p>
+            <strong>Security Reminder:</strong> Never share this verification
+            code with anyone. Our team will never ask for this code via phone or
+            email.
+          </p>
+        </div>
+
+        <p style="color: #64748b; font-size: 14px; margin-top: 24px">
+          If you didn't request this verification, please disregard this email
+          or contact our support team if you have concerns about your account
+          security.
+        </p>
+      </div>
+
+      <div class="footer">
+        <p class="company">NBKRIST Societies Platform</p>
+        <p>This is an automated message, please do not reply.</p>
+        <p>For support, contact us at support@nbkrist.edu</p>
+      </div>
+    </div>
+  </body>
+</html>
