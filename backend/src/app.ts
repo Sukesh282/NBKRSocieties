@@ -20,6 +20,7 @@ app.get("/", (_req, res) => {
   res.send("Iam alive !");
 });
 
+app.use("/api/users", userRouter);
+
 // Global error handler should be the last middleware
 app.use(globalErrorHandler);
-app.use("/api/users", userRouter);
