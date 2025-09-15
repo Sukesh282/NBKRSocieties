@@ -1,0 +1,41 @@
+/* 1. Import the Tailwind CSS engine. This replaces the old @tailwind directives. */
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Inter";
+  src: url("/Inter-VariableFont_opsz,wght.ttf") format("truetype-variations");
+}
+
+@theme {
+  /* Backgrounds */
+  --color-background: #ffffff; /* Clean white background */
+  --color-surface: #f8fafc; /* Very light gray surface */
+  --color-paper: #ffffff; /* White paper background */
+
+  /* Text */
+  --color-primary: #1e293b; /* Dark slate for primary text */
+  --color-secondary: #64748b; /* Medium slate for secondary text */
+
+  /* Borders */
+  --color-border: #e2e8f0; /* Light border color */
+
+  /* Disabled */
+  --color-disabled: #94a3b8; /* Muted for disabled elements */
+
+  /* Accent */
+  --color-accent: #3b82f6; /* Modern blue accent */
+  --color-accent-hover: #2563eb; /* Deeper blue for hover */
+
+  /* System Feedback */
+  --color-feedback-success: #10b981; /* Fresh green */
+  --color-feedback-error: #ef4444; /* Clean red */
+  --color-feedback-warning: #f59e0b; /* Warm amber */
+
+  /* Font */
+  --font-family-sans: "Inter", sans-serif;
+
+  /* Extras */
+  --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}

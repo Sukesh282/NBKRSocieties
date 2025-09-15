@@ -1,0 +1,53 @@
+import Button from "./Button";
+import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Bars3Icon } from "@heroicons/react/24/solid";
+import Menu from "./Menu";
+
+const Navbar = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  return (
+    <nav className="px-15a flex h-15 items-center justify-between bg-gray-200 px-14 py-5 backdrop-blur-md lg:px-50">
+      <div className="logo text-primary flex items-center gap-1 text-xl font-bold">
+        <div className="bg-accent h-8 w-8 rounded-full"></div>
+        <div className="hidden lg:block">NBKR Societies</div>
+      </div>
+
+      <div className="menu hidden md:flex">
+        <Menu />
+      </div>
+      <div className="buttons flex gap-2.5">
+        <Link to="/login">
+          <Button variant="primary" size="small">
+            Log in
+          </Button>
+        </Link>
+        <Link to="/signup">
+          <Button variant="outline" size="small">
+            Sign up
+          </Button>
+        </Link>
+      </div>
+      <div className="mobile-menu-icon md:hidden" onClick={toggleMenu}>
+        <Bars3Icon className="text-primary h-6 w-6" />
+      </div>
+
+      <div
+        className={`mobile-menu absolute top-17 left-[10px] z-50 min-w-[calc(100vw-20px)] rounded-2xl border-t border-gray-200 bg-white transition-all duration-300 ease-in-out md:hidden ${
+          isMenuOpen
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none -translate-y-4 opacity-0"
+        }`}
+      >
+        <Menu className="flex-col" />
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;
