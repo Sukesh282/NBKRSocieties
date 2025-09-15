@@ -9,11 +9,13 @@
     "NBKR",
     "NBKRIST",
     "nbkrsocieties",
+    "opsz",
     "Reddy",
     "rgba",
     "socialmedia",
     "Sukesh",
-    "verifyotp"
+    "verifyotp",
+    "wght"
   ],
   "files.exclude": {
     "**/.vscode": true,

@@ -6,7 +6,9 @@ interface ButtonProps {
   width?: "auto" | "full" | "large";
   children: React.ReactNode;
   onClick?: () => void;
+  onSubmit?: (e: React.FormEvent) => void;
   className?: string;
+  type?: "button" | "submit" | "reset";
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -16,6 +18,7 @@ const Button: React.FC<ButtonProps> = ({
   children,
   onClick,
   className,
+  type,
 }) => {
   const sizeClasses = {
     small: "px-4 py-2 text-sm",
@@ -38,7 +41,7 @@ const Button: React.FC<ButtonProps> = ({
   const classes = `${baseClasses} ${variantClasses} ${className}`.trim();
 
   return (
-    <button className={classes} onClick={onClick}>
+    <button type={type} className={classes} onClick={onClick}>
       {children}
     </button>
   );

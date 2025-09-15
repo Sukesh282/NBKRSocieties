@@ -39,3 +39,50 @@
   --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.1);
   --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Default text styles */
+@apply text-primary font-sans leading-relaxed;
+
+body {
+  @apply text-primary font-sans leading-relaxed;
+}
+
+p {
+  @apply mb-4 text-base leading-relaxed;
+}
+
+li {
+  @apply mb-1 text-sm leading-normal;
+}
+
+h1 {
+  @apply mb-6 text-4xl leading-tight font-bold;
+}
+
+h2 {
+  @apply mb-5 text-3xl leading-snug font-semibold;
+}
+
+h3 {
+  @apply mb-4 text-2xl leading-snug font-semibold;
+}
+
+h4 {
+  @apply mb-3 text-xl leading-snug font-medium;
+}
+
+h5 {
+  @apply mb-2 text-lg leading-snug font-medium;
+}
+
+h6 {
+  @apply mb-2 text-base leading-snug font-medium;
+}
+
+small {
+  @apply text-secondary text-sm;
+}
+
+blockquote {
+  @apply border-accent text-secondary my-6 border-l-4 pl-4 text-lg italic;
+}
