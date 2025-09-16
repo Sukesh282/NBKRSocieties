@@ -48,7 +48,7 @@ export const createUser = async (
       updatedAt: savedUser.updatedAt,
     };
 
-    res.status(201).json(safeUser);
+    res.status(201).json({ ...safeUser, message: "User created successfully" });
   } catch (error) {
     next(error);
   }
@@ -81,26 +81,25 @@ export const loginUser = async (
       config.jwtSecret as string,
       { expiresIn: "15m" },
     );
-
     const refreshToken = jwt.sign(
       { userId: user._id, role: user.role },
       config.jwtSecret as string,
       { expiresIn: "30d" },
     );
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: config.nodeEnv === "production",
-      sameSite: "strict",
-    });
-
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: config.nodeEnv === "production",
-      sameSite: "strict",
+      sameSite: "none",
     });
 
-    res.status(200).json({ accessToken });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: config.nodeEnv === "production",
+      sameSite: "none",
+    });
+
+    res.status(200).json({ accessToken, message: "Login successful" });
   } catch (error) {
     next(error);
   }
@@ -208,4 +207,21 @@ export const verifyEmail = async (
   } catch (error) {
     next(error);
   }
+};
+
+export const getUser = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (!req.user) {
+    return next(createHttpError(401, "Unauthorized"));
+  }
+
+  const user = req.user;
+
+  res.status(200).json({
+    username: user.username,
+    name: user.name,
+  });
 };

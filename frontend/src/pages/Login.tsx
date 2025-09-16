@@ -4,12 +4,17 @@ import { PageTitle } from "../components/PageTitle";
 import { useState, useEffect } from "react";
 import { BASE_URL } from "../hooks/env";
 import { useNavigate } from "react-router-dom";
+import { useError } from "../contexts/useError";
+import { useLogin } from "../contexts/useLogin";
 
 interface LoginProps {
   isLoginP: boolean;
 }
 
 const Login = ({ isLoginP }: LoginProps) => {
+  const { setError, setGood } = useError();
+  const { setIsLoggedIn } = useLogin();
+
   const [isLogin, setIsLogin] = useState(isLoginP);
   const [isLoaded, setIsLoaded] = useState(false);
   const [formValues, setFormValues] = useState({
@@ -17,6 +22,15 @@ const Login = ({ isLoginP }: LoginProps) => {
     username: "",
     password: "",
   });
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    setIsLogin(isLoginP);
+  }, [isLoginP]);
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,19 +48,20 @@ const Login = ({ isLoginP }: LoginProps) => {
     );
 
     if (response.ok) {
+      const mes = await response.json();
+      setGood(true);
+      setError(mes.message);
       if (isLogin) {
-        // Redirect to dashboard or home page after successful login
+        setIsLoggedIn(true);
         navigate("/dashboard");
       } else {
-        // Optionally, log the user in automatically after registration
         navigate("/login");
       }
     } else {
-      const errorData = await response.json();
-      console.error("Error:", errorData);
-      // Handle errors (e.g., show error message to user)
+      const err = await response.json();
+      setGood(false);
+      setError(err.message || "Something went wrong");
     }
-    // Handle form submission logic here
   };
 
   const updateFormValue = (field: string, value: string) => {
@@ -55,10 +70,6 @@ const Login = ({ isLoginP }: LoginProps) => {
       [field]: value,
     }));
   };
-
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
 
   const toggleMenu = () => {
     setIsLogin(!isLogin);
@@ -89,7 +100,7 @@ const Login = ({ isLoginP }: LoginProps) => {
           <form className="flex w-full flex-col gap-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                className={`overflow-hidden transition-all duration-300 ease-linear ${
                   !isLogin
                     ? "max-h-20 translate-y-0 transform opacity-100"
                     : "max-h-0 -translate-y-2 transform opacity-0"

@@ -8,5 +8,5 @@ export const globalErrorHandler = (
   _next: NextFunction,
 ) => {
   console.error(err.stack);
-  res.status(500).send("Something broke!");
+  res.status(err.statusCode).json({ message: err.message });
 };
