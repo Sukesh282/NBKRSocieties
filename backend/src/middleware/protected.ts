@@ -14,7 +14,14 @@ export const protectedRoute = async (
   _res: Response,
   next: NextFunction,
 ) => {
-  const accessToken = req.cookies?.accessToken;
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return next(
+      createHttpError(401, "Authorization header missing or malformed"),
+    );
+  }
+  const accessToken = authHeader.split(" ")[1];
+
   if (!accessToken) {
     return next(createHttpError(401, "Access token not found"));
   }

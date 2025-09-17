@@ -1,38 +1,16 @@
 import Button from "./Button";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Bars3Icon } from "@heroicons/react/24/solid";
 import Menu from "./Menu";
 import vite from "/vite.png";
-import { useLogin } from "../contexts/useLogin";
-import { BASE_URL } from "../hooks/env";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [firstLetter, setFirstLetter] = useState("A");
-  const { isLoggedIn, setIsLoggedIn } = useLogin();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-
-  const checkUserLogin = async () => {
-    const response = await fetch(`${BASE_URL}/api/users/getUser`, {
-      method: "GET",
-      credentials: "include",
-    });
-    if (response.ok) {
-      const user = await response.json();
-      setFirstLetter(user.name.charAt(0).toUpperCase());
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-    }
-  };
-
-  useEffect(() => {
-    checkUserLogin();
-  });
 
   return (
     <>
@@ -45,24 +23,19 @@ const Navbar = () => {
         <div className="menu hidden md:flex">
           <Menu />
         </div>
-        {isLoggedIn ? (
-          <div className="bg-accent mb-0 flex h-5 w-5 items-center justify-center rounded-full p-5">
-            <h4 className="font-bold text-white">{firstLetter}</h4>
-          </div>
-        ) : (
-          <div className={`buttons flex gap-2.5`}>
-            <Link reloadDocument={true} to="/login">
-              <Button variant="primary" size="small">
-                Log in
-              </Button>
-            </Link>
-            <Link reloadDocument={true} to="/signup">
-              <Button variant="outline" size="small">
-                Sign up
-              </Button>
-            </Link>
-          </div>
-        )}
+
+        <div className={`buttons flex gap-2.5`}>
+          <Link reloadDocument={true} to="/login">
+            <Button variant="primary" size="small">
+              Log in
+            </Button>
+          </Link>
+          <Link reloadDocument={true} to="/signup">
+            <Button variant="outline" size="small">
+              Sign up
+            </Button>
+          </Link>
+        </div>
         <div className="mobile-menu-icon md:hidden" onClick={toggleMenu}>
           <Bars3Icon className="text-primary h-6 w-6" />
         </div>

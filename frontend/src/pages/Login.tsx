@@ -5,17 +5,11 @@ import { useState, useEffect } from "react";
 import { BASE_URL } from "../hooks/env";
 import { useNavigate } from "react-router-dom";
 import { useError } from "../contexts/useError";
-import { useLogin } from "../contexts/useLogin";
 
-interface LoginProps {
-  isLoginP: boolean;
-}
-
-const Login = ({ isLoginP }: LoginProps) => {
+const Login = () => {
   const { setError, setGood } = useError();
-  const { setIsLoggedIn } = useLogin();
 
-  const [isLogin, setIsLogin] = useState(isLoginP);
+  const [isLogin, setIsLogin] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [formValues, setFormValues] = useState({
     name: "",
@@ -26,10 +20,6 @@ const Login = ({ isLoginP }: LoginProps) => {
   useEffect(() => {
     setIsLoaded(true);
   }, []);
-
-  useEffect(() => {
-    setIsLogin(isLoginP);
-  }, [isLoginP]);
 
   const navigate = useNavigate();
 
@@ -52,7 +42,6 @@ const Login = ({ isLoginP }: LoginProps) => {
       setGood(true);
       setError(mes.message);
       if (isLogin) {
-        setIsLoggedIn(true);
         navigate("/dashboard");
       } else {
         navigate("/login");
