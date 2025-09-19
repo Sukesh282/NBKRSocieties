@@ -1,27 +1,32 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
-import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import { ErrorProvider } from "./contexts/ErrorContext";
-import { AuthProvider } from "./contexts/AuthContext";
 import AlertComponent from "./components/AlertComponent";
+import Profile from "./pages/Profile";
+
+import { AuthProvider } from "./contexts/AuthContext";
+import NavBar from "./components/NavBar";
+// import ProtectedNavbar from "./components/ProtectedNavbar";
 
 function App() {
+  // const PublicRoutes: string[] = ["/login", "/signup", "/"];
+
   return (
-    <AuthProvider>
-      <ErrorProvider>
+    <ErrorProvider>
+      <AuthProvider>
         <AlertComponent />
         <div className="font-family-sans min-h-screen bg-gray-100">
-          <Navbar />
+          <NavBar />
           <Routes>
             <Route path="/" element={<div>Home</div>} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Login />} />
+            <Route path="/auth" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </div>
-      </ErrorProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ErrorProvider>
   );
 }
 

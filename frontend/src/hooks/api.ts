@@ -1,16 +1,12 @@
-import { useAuth } from "../contexts/useAuth";
 import { useError } from "../contexts/useError";
 import { BASE_URL } from "./env";
 
 export function useApi() {
-  const { accessToken } = useAuth();
-
   const { setError, setGood } = useError();
 
   const callApi = async (url: string, options: RequestInit = {}) => {
     const headers = {
       ...options.headers,
-      Authorization: `Bearer ${accessToken}`,
     };
 
     const res = await fetch(`${BASE_URL}${url}`, {
@@ -20,7 +16,8 @@ export function useApi() {
     });
 
     if (!res.ok) {
-      setError("API call failed");
+      const reaction = await res.json();
+      setError(reaction.message || "API call failed");
       setGood(false);
       return;
     }

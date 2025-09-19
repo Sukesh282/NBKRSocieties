@@ -87,16 +87,11 @@ export const loginUser = async (
       { expiresIn: "30d" },
     );
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: config.nodeEnv === "production",
-      sameSite: "none",
-    });
-
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: config.nodeEnv === "production",
-      sameSite: "none",
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
 
     res.status(200).json({ accessToken, message: "Login successful" });
@@ -111,6 +106,7 @@ export const refreshAccessToken = async (
   next: NextFunction,
 ) => {
   const refreshToken = req.cookies.refreshToken;
+  console.log("Refresh token:", refreshToken);
   if (!refreshToken) {
     return next(createHttpError(401, "Refresh token not found"));
   }
@@ -121,6 +117,8 @@ export const refreshAccessToken = async (
       role: string;
     };
 
+    const user = await UserModel.findById(payload.userId);
+
     const accessToken = jwt.sign(
       { userId: payload.userId, role: payload.role },
       config.jwtSecret as string,
@@ -130,10 +128,17 @@ export const refreshAccessToken = async (
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: config.nodeEnv === "production",
-      sameSite: "strict",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
-    res.status(200).json({ accessToken });
+    res.status(200).json({
+      name: user?.name,
+      email: user?.email || null,
+      username: user?.username,
+      role: user?.role,
+      accessToken,
+    });
   } catch (error) {
     res.status(401).json({ error: "Invalid or expired refresh token" });
   }
@@ -160,7 +165,7 @@ export const sendOTPMail = async (
     const timestamp: number = Date.now();
     usersWaitingVerify[req.user.username] = { email, otp, timestamp };
 
-    sendOTPMailTool(email, otp, req.user.name);
+    await sendOTPMailTool(email, otp, req.user.name);
 
     res.status(200).json({ message: "OTP sent to email" });
   } catch (error) {
